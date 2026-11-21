@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Receipt {{ payment.receipt_number }} | Scholabooks{% endblock %}
+
+{% block content %}
+<div class="page-heading no-print">
+    <div><p class="eyebrow">PAYMENT RECEIPT</p><h1>Receipt saved</h1></div>
+    <div class="button-row">
+        <button class="button button-primary" type="button" onclick="window.print()">Print receipt</button>
+        <a class="button button-secondary" href="{% url 'student-detail' payment.student.pk %}">Back to student</a>
+    </div>
+</div>
+<article class="card receipt">
+    <div class="receipt-heading">
+        <div><p class="eyebrow">SCHOLABOOKS</p><h2>Fee payment receipt</h2></div>
+        <div class="receipt-number"><span>Receipt no.</span><strong>{{ payment.receipt_number }}</strong></div>
+    </div>
+    <dl class="details-list receipt-details">
+        <div><dt>Student</dt><dd>{{ payment.student.name }}</dd></div>
+        <div><dt>Admission no.</dt><dd>{{ payment.student.admission_number }}</dd></div>
+        <div><dt>Class</dt><dd>{{ payment.student.class_name }}</dd></div>
+        <div><dt>Payment date</dt><dd>{{ payment.payment_date|date:'M j, Y' }}</dd></div>
+        <div><dt>Payment method</dt><dd>{{ payment.get_payment_method_display }}</dd></div>
+        <div><dt>Amount received</dt><dd class="receipt-amount">{{ payment.amount|floatformat:2 }}</dd></div>
+        <div><dt>Balance after payment</dt><dd>{{ balance_after_payment|floatformat:2 }}</dd></div>
+        {% if payment.note %}<div><dt>Note</dt><dd>{{ payment.note }}</dd></div>{% endif %}
+        <div><dt>Recorded by</dt><dd>{{ payment.recorded_by.get_full_name|default:payment.recorded_by.username|default:'—' }}</dd></div>
+    </dl>
+    <p class="receipt-thanks">Thank you. Please keep this receipt for your records.</p>
+</article>
+{% endblock %}

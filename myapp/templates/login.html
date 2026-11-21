@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign in | Scholabooks{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-layout {
+        min-height: calc(100vh - 120px);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        gap: 4rem;
+        padding: 3rem 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    /* Ambient background blobs */
+    .login-layout::before,
+    .login-layout::after {
+        content: "";
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(120px);
+        z-index: -1;
+        pointer-events: none;
+    }
+    .login-layout::before {
+        width: 480px; height: 480px;
+        background: rgba(99, 102, 241, 0.35);
+        top: -140px; left: -120px;
+    }
+    .login-layout::after {
+        width: 420px; height: 420px;
+        background: rgba(45, 212, 191, 0.30);
+        bottom: -160px; right: -100px;
+    }
+
+    .login-intro {
+        max-width: 480px;
+    }
+
+    .login-intro .eyebrow {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #6366f1;
+        margin-bottom: 1rem;
+    }
+
+    .login-intro h1 {
+        font-size: clamp(2rem, 3.5vw, 2.9rem);
+        font-weight: 800;
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+        color: #0f172a;
+        margin-bottom: 1.25rem;
+    }
+
+    .login-intro > p:last-of-type {
+        font-size: 1.05rem;
+        line-height: 1.65;
+        color: #475569;
+    }
+
+    /* Glass card */
+    .login-card {
+        background: rgba(255, 255, 255, 0.55);
+        backdrop-filter: blur(24px) saturate(180%);
+        -webkit-backdrop-filter: blur(24px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 24px;
+        padding: 2.5rem;
+        box-shadow:
+            0 8px 32px rgba(15, 23, 42, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        width: 100%;
+        max-width: 440px;
+        justify-self: end;
+        animation: cardIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes cardIn {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-card h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: #0f172a;
+        margin: 0 0 1.75rem;
+    }
+
+    .login-card .field {
+        margin-bottom: 1.25rem;
+    }
+
+    .login-card .field label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 0.5rem;
+    }
+
+    .login-card .field input {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        font-size: 0.95rem;
+        color: #0f172a;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        border-radius: 12px;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        box-sizing: border-box;
+    }
+
+    .login-card .field input:focus {
+        background: rgba(255, 255, 255, 0.95);
+        border-color: #6366f1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+    }
+
+    .field-error {
+        display: block;
+        font-size: 0.8rem;
+        color: #dc2626;
+        margin-top: 0.35rem;
+    }
+
+    .form-errors {
+        background: rgba(254, 226, 226, 0.7);
+        border: 1px solid rgba(248, 113, 113, 0.5);
+        color: #b91c1c;
+        font-size: 0.875rem;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        margin-bottom: 1.25rem;
+    }
+
+    .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+        text-decoration: none;
+        border: none;
+    }
+
+    .button-wide {
+        width: 100%;
+        padding: 0.85rem 1.25rem;
+    }
+
+    .button-primary {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: #fff;
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        margin-top: 0.5rem;
+    }
+
+    .button-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
+    }
+
+    .button-primary:active {
+        transform: translateY(0);
+    }
+
+    .login-footer {
+        margin-top: 1.75rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(148, 163, 184, 0.25);
+        text-align: center;
+    }
+
+    .login-footer p {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin: 0 0 1rem;
+    }
+
+    .button-secondary {
+        background: rgba(255, 255, 255, 0.6);
+        color: #334155;
+        border: 1px solid rgba(148, 163, 184, 0.45);
+    }
+
+    .button-secondary:hover {
+        background: rgba(255, 255, 255, 0.9);
+        border-color: #6366f1;
+        color: #4f46e5;
+        transform: translateY(-1px);
+    }
+
+    @media (max-width: 860px) {
+        .login-layout {
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+            padding: 2rem 1.25rem;
+        }
+        .login-intro {
+            max-width: 100%;
+            text-align: center;
+        }
+        .login-card {
+            justify-self: center;
+            padding: 2rem 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="login-layout">
+    <div class="login-intro">
+        <p class="eyebrow">Scholabooks Student Accounts</p>
+        <h1>Keep student fees clear and up to date.</h1>
+        <p>Sign in to manage admissions, record payments and print receipts.</p>
+    </div>
+    <div class="card login-card">
+        <h2>Staff sign in</h2>
+        <form method="post">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="form-errors">{{ form.non_field_errors }}</div>
+            {% endif %}
+            {% for field in form %}
+                <div class="field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <span class="field-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            {% if next %}
+                <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+            <button class="button button-primary button-wide" type="submit">Sign in</button>
+        </form>
+        <div class="login-footer">
+            <p>Student? Your account is separate from staff access.</p>
+            <a class="button button-secondary button-wide" href="{% url 'student-login' %}">Go to student portal</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

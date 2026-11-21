@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Ledger — {{ student.name }} | Scholabooks{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">STUDENT LEDGER</p>
+        <h1>{{ student.name }}</h1>
+        <p class="muted">{{ student.admission_number }} · {{ student.class_name }}</p>
+    </div>
+    <div class="button-row">
+        {% if student.balance > 0 %}
+            <a class="button button-primary" href="{% url 'record-payment' student.pk %}">Record payment</a>
+        {% endif %}
+        <a class="button button-secondary" href="{% url 'student-detail' student.pk %}">Student details</a>
+    </div>
+</div>
+
+<section class="summary-grid ledger-summary">
+    <article class="summary-card"><span class="summary-label">Fees charged</span><strong>{{ student.fee_total|floatformat:2 }}</strong></article>
+    <article class="summary-card"><span class="summary-label">Payments received</span><strong>{{ student.paid_total|floatformat:2 }}</strong></article>
+    <article class="summary-card summary-highlight">
+        {% if student.balance < 0 %}<span class="summary-label">Credit to carry forward</span>
+        {% else %}<span class="summary-label">Balance due</span>{% endif %}
+        <strong>{{ student.balance|floatformat:2 }}</strong>
+    </article>
+</section>
+
+<section class="card">
+    <div class="section-heading">
+        <div><h2>Account activity</h2><p class="muted">Debits increase the amount due; credits are recorded payments.</p></div>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Date</th><th>Description</th><th>Reference</th><th class="numeric">Debit</th><th class="numeric">Credit</th><th class="numeric">Balance</th></tr>
+            </thead>
+            <tbody>
+                {% for entry in entries %}
+                    <tr>
+                        <td>{{ entry.date|date:'M j, Y' }}</td>
+                        <td>{{ entry.description }}</td>
+                        <td>
+                            {% if entry.payment %}
+                                <a href="{% url 'payment-receipt' entry.payment.pk %}">{{ entry.reference }}</a>
+                            {% else %}
+                                {{ entry.reference }}
+                            {% endif %}
+                        </td>
+                        <td class="numeric">{% if entry.debit %}{{ entry.debit|floatformat:2 }}{% else %}—{% endif %}</td>
+                        <td class="numeric">{% if entry.credit %}{{ entry.credit|floatformat:2 }}{% else %}—{% endif %}</td>
+                        <td class="numeric">{{ entry.balance|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

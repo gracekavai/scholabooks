@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Record payment | Scholabooks{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">FEE COLLECTION</p>
+        <h1>Record a payment</h1>
+        <p class="muted">{{ student.name }} · {{ student.admission_number }}</p>
+    </div>
+    <a class="button button-secondary" href="{% url 'student-detail' student.pk %}">Back to student</a>
+</div>
+<section class="payment-layout">
+    <form class="card form-card" method="post">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+            <div class="field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="form-actions">
+            <a class="button button-secondary" href="{% url 'student-detail' student.pk %}">Cancel</a>
+            <button class="button button-primary" type="submit">Save payment</button>
+        </div>
+    </form>
+    <aside class="card balance-card">
+        <p class="summary-label">Current balance due</p>
+        <strong>{{ student.balance|floatformat:2 }}</strong>
+        <p class="muted">The receipt number must be unique. Balance updates automatically after this payment is saved.</p>
+    </aside>
+</section>
+{% endblock %}

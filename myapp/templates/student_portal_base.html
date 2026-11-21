@@ -1,0 +1,40 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Brooksville Senior School{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="{% url 'student-portal' %}">
+            <span class="brand-mark">B</span> Brooksville Senior School
+        </a>
+        {% if user.is_authenticated and user.student_portal_account %}
+            <nav class="topbar-actions">
+                {% if not user.student_portal_account.must_change_password %}
+                    <a href="{% url 'student-portal' %}">My account</a>
+                    <a href="{% url 'student-portal-statement' %}">Fee statement</a>
+                    <a href="{% url 'student-make-payment' %}">Pay fees</a>
+                {% endif %}
+                <form method="post" action="{% url 'student-logout' %}">
+                    {% csrf_token %}
+                    <button class="link-button" type="submit">Sign out</button>
+                </form>
+            </nav>
+        {% endif %}
+    </header>
+    <main class="page">
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

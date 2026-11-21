@@ -1,0 +1,77 @@
+{% extends 'student_portal_base.html' %}
+
+{% block title %}Pay school fees | Brooksville Senior School{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">BROOKSVILLE SENIOR SCHOOL · FEE PAYMENT</p>
+        <h1>Pay school fees</h1>
+        <p class="muted">Payments only update your balance after M-Pesa confirmation or school office verification.</p>
+    </div>
+    <a class="button button-secondary" href="{% url 'student-portal' %}">Back to my account</a>
+</div>
+<section class="payment-layout">
+    <form class="card form-card" method="post" action="{% url 'student-make-payment' %}">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="field">
+            <label for="{{ form.method.id_for_label }}">{{ form.method.label }}</label>
+            {{ form.method }}
+            {% for error in form.method.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="field">
+            <label for="{{ form.amount.id_for_label }}">{{ form.amount.label }}</label>
+            {{ form.amount }}
+            {% for error in form.amount.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="field" id="stk-phone-field">
+            <label for="{{ form.phone_number.id_for_label }}">M-Pesa phone number</label>
+            {{ form.phone_number }}
+            {% for error in form.phone_number.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            <small>We will send an M-Pesa prompt to this phone.</small>
+        </div>
+        <div class="field" id="paybill-reference-field">
+            <label for="{{ form.paybill_reference.id_for_label }}">M-Pesa transaction code</label>
+            {{ form.paybill_reference }}
+            {% for error in form.paybill_reference.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            <small>Enter the transaction code from your M-Pesa confirmation message.</small>
+        </div>
+        <div class="form-actions">
+            <a class="button button-secondary" href="{% url 'student-portal' %}">Cancel</a>
+            <button class="button button-primary" type="submit">Continue to payment</button>
+        </div>
+    </form>
+    <aside class="card balance-card">
+        <p class="summary-label">Current balance</p>
+        <strong>{{ student.balance|floatformat:2 }}</strong>
+        <p class="muted">If your account has a credit, it will carry forward. You may still make an additional payment.</p>
+        <div class="paybill-details">
+            {% if mpesa_paybill %}
+                <p><strong>School Paybill / Till:</strong> {{ mpesa_paybill }}</p>
+                <p><strong>Account reference:</strong> {{ student.admission_number }}</p>
+            {% else %}
+                <p class="muted">Paybill details have not been configured. Contact the school office before using Paybill.</p>
+            {% endif %}
+            <p class="muted">Paybill submissions remain pending until the school office verifies the transaction.</p>
+        </div>
+    </aside>
+</section>
+<script>
+    (function () {
+        const method = document.getElementById('id_method');
+        const phone = document.getElementById('stk-phone-field');
+        const reference = document.getElementById('paybill-reference-field');
+        if (!method || !phone || !reference) return;
+        function updatePaymentFields() {
+            const isStk = method.value === 'stk_push';
+            phone.hidden = !isStk;
+            reference.hidden = isStk;
+            document.getElementById('id_phone_number').required = isStk;
+            document.getElementById('id_paybill_reference').required = !isStk;
+        }
+        method.addEventListener('change', updatePaymentFields);
+        updatePaymentFields();
+    }());
+</script>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'student_portal_base.html' %}
+
+{% block title %}Payment status | Brooksville Senior School{% endblock %}
+
+{% block content %}
+<section class="card payment-status-card">
+    <p class="eyebrow">BROOKSVILLE SENIOR SCHOOL · PAYMENT STATUS</p>
+    {% if payment_request.status == 'confirmed' %}
+        <h1>Payment successful</h1>
+        <p class="status-text">Your payment has been confirmed and added to your fee statement.</p>
+        <div class="summary-card summary-highlight status-amount">
+            <span class="summary-label">Amount confirmed</span>
+            <strong>{{ payment_request.amount|floatformat:2 }}</strong>
+        </div>
+        {% if payment_request.payment %}
+            <p>Receipt: <strong>{{ payment_request.payment.receipt_number }}</strong></p>
+        {% endif %}
+    {% elif payment_request.status == 'failed' %}
+        <h1>Payment not confirmed</h1>
+        <p class="status-text">{{ payment_request.status_message|default:'The payment was not completed. No amount has been added to your account.' }}</p>
+    {% else %}
+        <h1>Payment pending</h1>
+        <p class="status-text">{{ payment_request.status_message }}</p>
+        {% if payment_request.method == 'paybill' %}
+            <p>Your payment will appear in your balance after the school office verifies the M-Pesa transaction code.</p>
+        {% else %}
+            <p>Complete the M-Pesa prompt on your phone. This page will show success after M-Pesa confirms it. Refresh to check the latest status.</p>
+        {% endif %}
+    {% endif %}
+    <div class="button-row status-actions">
+        <a class="button button-primary" href="{% url 'student-portal' %}">Back to my account</a>
+        {% if payment_request.status == 'failed' %}
+            <a class="button button-secondary" href="{% url 'student-make-payment' %}">Try again</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

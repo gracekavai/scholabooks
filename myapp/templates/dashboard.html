@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Students &amp; fees | Scholabooks{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">SCHOLABOOKS STUDENT ACCOUNTS</p>
+        <h1>Students &amp; fees</h1>
+        <p class="muted">Admissions, fee collections and balances in one place.</p>
+    </div>
+    <a class="button button-primary" href="{% url 'student-create' %}">+ Admit student</a>
+</div>
+
+<section class="summary-grid" aria-label="School fee summary">
+    <article class="summary-card"><span class="summary-label">Students admitted</span><strong>{{ student_count }}</strong></article>
+    <article class="summary-card"><span class="summary-label">Total school fees</span><strong>{{ total_fees|floatformat:2 }}</strong></article>
+    <article class="summary-card"><span class="summary-label">Fees collected</span><strong>{{ total_paid|floatformat:2 }}</strong></article>
+    <article class="summary-card summary-highlight">
+        {% if total_balance < 0 %}
+            <span class="summary-label">Net credit to carry forward</span>
+        {% else %}
+            <span class="summary-label">Fees outstanding</span>
+        {% endif %}
+        <strong>{{ total_balance|floatformat:2 }}</strong>
+    </article>
+</section>
+
+<section class="card">
+    <div class="section-heading">
+        <div><h2>Student register</h2><p class="muted">Search by name, admission number or class.</p></div>
+        <form class="search-form" method="get" action="{% url 'dashboard' %}">
+            <label class="sr-only" for="student-search">Search students</label>
+            <input id="student-search" type="search" name="q" value="{{ search }}" placeholder="Search students">
+            <button class="button button-secondary" type="submit">Search</button>
+            {% if search %}<a class="button button-secondary" href="{% url 'dashboard' %}">Clear</a>{% endif %}
+        </form>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Student</th><th>Admission no.</th><th>Class</th><th class="numeric">Fees</th><th class="numeric">Paid</th><th class="numeric">Balance</th><th>Status</th></tr></thead>
+            <tbody>
+                {% for student in page_obj %}
+                    <tr>
+                        <td><a class="student-link" href="{% url 'student-detail' student.pk %}">{{ student.name }}</a></td>
+                        <td>{{ student.admission_number }}</td>
+                        <td>{{ student.class_name }}</td>
+                        <td class="numeric">{{ student.fee_total|floatformat:2 }}</td>
+                        <td class="numeric">{{ student.paid_total|floatformat:2 }}</td>
+                        <td class="numeric">{{ student.balance|floatformat:2 }}</td>
+                        <td>
+                            {% if student.balance < 0 %}<span class="badge badge-partial">Credit</span>
+                            {% elif student.balance == 0 %}<span class="badge badge-paid">Paid</span>
+                            {% elif student.paid_total > 0 %}<span class="badge badge-partial">Part paid</span>
+                            {% else %}<span class="badge badge-due">Unpaid</span>{% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td class="empty-state" colspan="7">No students found. Admit a student to get started.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}<a class="button button-secondary" href="?q={{ search|urlencode }}&amp;page={{ page_obj.previous_page_number }}">Previous</a>{% else %}<span></span>{% endif %}
+            <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a class="button button-secondary" href="?q={{ search|urlencode }}&amp;page={{ page_obj.next_page_number }}">Next</a>{% else %}<span></span>{% endif %}
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

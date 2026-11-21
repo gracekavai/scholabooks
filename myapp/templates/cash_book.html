@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Cash book | Scholabooks{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">ACCOUNTING</p>
+        <h1>Cash book</h1>
+        <p class="muted">Track every fee receipt and how it was paid.</p>
+    </div>
+    <a class="button button-secondary" href="{% url 'dashboard' %}">Back to students</a>
+</div>
+
+<section class="summary-grid cashbook-summary">
+    <article class="summary-card summary-highlight">
+        <span class="summary-label">Receipts in this view</span>
+        <strong>{{ total_received|floatformat:2 }}</strong>
+    </article>
+    {% for method in method_totals %}
+        <article class="summary-card">
+            <span class="summary-label">{{ method.label }}</span>
+            <strong>{{ method.total|floatformat:2 }}</strong>
+        </article>
+    {% endfor %}
+</section>
+
+<section class="card">
+    <div class="section-heading">
+        <div><h2>Paybill submissions to verify</h2><p class="muted">Check each transaction in M-Pesa before confirming it. Confirmed payments immediately appear in the student's balance.</p></div>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Submitted</th><th>Student</th><th>Transaction code</th><th class="numeric">Amount</th><th>Review</th></tr></thead>
+            <tbody>
+                {% for payment_request in pending_paybill_requests %}
+                    <tr>
+                        <td>{{ payment_request.created_at|date:'M j, Y H:i' }}</td>
+                        <td>{{ payment_request.student.name }} · {{ payment_request.student.admission_number }}</td>
+                        <td>{{ payment_request.paybill_reference }}</td>
+                        <td class="numeric">{{ payment_request.amount|floatformat:2 }}</td>
+                        <td>
+                            <form method="post" action="{% url 'review-paybill-request' payment_request.pk %}" class="button-row">
+                                {% csrf_token %}
+                                <button class="button button-primary" name="decision" value="confirm" type="submit">Confirm</button>
+                                <button class="button button-secondary" name="decision" value="reject" type="submit">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td class="empty-state" colspan="5">No Paybill submissions are waiting for review.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card">
+    <div class="section-heading">
+        <div><h2>Filter receipts</h2><p class="muted">Narrow the cash book by date, method or student.</p></div>
+    </div>
+    <form class="cashbook-filters" method="get" action="{% url 'cash-book' %}">
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+            <div class="field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="filter-actions">
+            <button class="button button-primary" type="submit">Apply filters</button>
+            <a class="button button-secondary" href="{% url 'cash-book' %}">Clear</a>
+        </div>
+    </form>
+</section>
+
+<section class="card">
+    <div class="section-heading">
+        <div><h2>Receipt register</h2><p class="muted">Showing {{ page_obj.paginator.count }} receipt{{ page_obj.paginator.count|pluralize }}.</p></div>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Date</th><th>Receipt no.</th><th>Student</th><th>Method</th><th>Recorded by</th><th class="numeric">Amount received</th></tr>
+            </thead>
+            <tbody>
+                {% for payment in page_obj %}
+                    <tr>
+                        <td>{{ payment.payment_date|date:'M j, Y' }}</td>
+                        <td><a href="{% url 'payment-receipt' payment.pk %}">{{ payment.receipt_number }}</a></td>
+                        <td><a href="{% url 'student-detail' payment.student.pk %}">{{ payment.student.name }}</a></td>
+                        <td>{{ payment.get_payment_method_display }}</td>
+                        <td>{{ payment.recorded_by.get_full_name|default:payment.recorded_by.username|default:'—' }}</td>
+                        <td class="numeric">{{ payment.amount|floatformat:2 }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td class="empty-state" colspan="6">No receipts match these filters.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if previous_url %}<a class="button button-secondary" href="{{ previous_url }}">Previous</a>{% else %}<span></span>{% endif %}
+            <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if next_url %}<a class="button button-secondary" href="{{ next_url }}">Next</a>{% else %}<span></span>{% endif %}
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
